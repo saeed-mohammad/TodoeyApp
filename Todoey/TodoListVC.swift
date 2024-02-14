@@ -10,9 +10,13 @@ import UIKit
 class TodoListVC: UITableViewController {
 
     var topicArray = ["shopping","learing","traveling","music","games"]
+    let defaults = UserDefaults.standard
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        if let item = defaults.array(forKey: "TodoListArray") as? [String]{
+            topicArray = item
+        }
     }
 
     // MARK: - Table view data source
@@ -54,6 +58,7 @@ class TodoListVC: UITableViewController {
 
             if let itemText = textField.text, !itemText.isEmpty {
                 self.topicArray.append(itemText)
+                self.defaults.set(self.topicArray, forKey: "TodoListArray")
                 self.tableView.reloadData()
             }
             
