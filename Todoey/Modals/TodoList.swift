@@ -7,7 +7,8 @@
 
 import Foundation
 
-class TodoList{
+//class TodoList: Encodable,Decodable{
+    class TodoList: Codable{
     var title: String = ""
     var done: Bool = false
     
