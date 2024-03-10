@@ -6,24 +6,19 @@
 //
 
 import UIKit
+import CoreData
 
 class TodoListVC: UITableViewController {
-
+    
     var topicArray = [TodoList]()
-//    let defaults = UserDefaults.standard
-    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
+    
+    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     override func viewDidLoad() {
         super.viewDidLoad()
-//        print(dataFilePath)
-        let item1 = TodoList()
-        item1.title = "New Todo"
-        topicArray.append(item1)
+        print(dataFilePath)
         
-        
-//        if let item = defaults.array(forKey: "TodoListArray") as? [TodoList]{
-//            topicArray = item
-//        }
         loadItem()
     }
 
@@ -51,7 +46,6 @@ class TodoListVC: UITableViewController {
 //        print(topicArray[indexPath.row])
         
         topicArray[indexPath.row].done = !topicArray[indexPath.row].done
-//        tableView.reloadData()
         saveItems()
         
         tableView.deselectRow(at: indexPath, animated: true)
@@ -67,22 +61,17 @@ class TodoListVC: UITableViewController {
         
         let action = UIAlertAction(title: "Add Items", style: .default, handler: { _ in
             // what will happen once user click the add item btn
+            
+            
 
             if let itemText = textField.text, !itemText.isEmpty {
                 
-                let newItem = TodoList()
-                newItem.title = itemText
-                self.topicArray.append(newItem)
-//                self.defaults.set(self.topicArray, forKey: "TodoListArray")
-//                let encoder = PropertyListEncoder()
-//                do{
-//                    let data = try encoder.encode(self.topicArray)
-//                    try data.write(to: self.dataFilePath!)
-//                }catch{
-//                    print("Error data encoding item array \(error)")
-//                }
+//                let newItem = TodoList()
+                let newItem = TodoList(context: self.context)
                 
-//                self.tableView.reloadData()
+                newItem.title = itemText
+                newItem.done = false
+                self.topicArray.append(newItem)
                 self.saveItems()
             }
             
@@ -99,27 +88,22 @@ class TodoListVC: UITableViewController {
     
     
     func saveItems(){
-        let encoder = PropertyListEncoder()
-        
         do{
-            let data = try encoder.encode(topicArray)
-            try data.write(to: dataFilePath!)
+            let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+            try context.save()
         }catch{
-            print("Error data encoding item array \(error)")
+            print("Error saving context \(error)")
         }
         
         self.tableView.reloadData()
     }
     
     func loadItem(){
-        
-        if let data = try? Data(contentsOf: dataFilePath!){
-            let decoder = PropertyListDecoder()
-            do{
-            topicArray = try decoder.decode([TodoList].self, from: data)
-            }catch{
-                print("Error decoding item array \(error)")
-            }
+        let request : NSFetchRequest<TodoList> = TodoList.fetchRequest()
+        do{
+            topicArray = try context.fetch(request)
+        }catch{
+            print("Error fetching data from context \(error)")
         }
     }
     
